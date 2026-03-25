@@ -1,4 +1,6 @@
-// hooks/use-auth.ts
+// hooks/use-auth.tsx
+"use client"
+
 import { useState, useEffect, useContext, createContext, ReactNode } from 'react';
 import { User, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';

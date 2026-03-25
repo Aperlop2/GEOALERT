@@ -15,6 +15,7 @@ import { List, Map as MapIcon, X } from "lucide-react"
 import { mockEvents, emergencyContacts, mockNotifications, mockUser } from "@/lib/mock-data"
 import type { NaturalEvent, EventType, AlertLevel } from "@/lib/types"
 import { useAuth } from "@/hooks/use-auth"
+import type { User as FirebaseUser } from "firebase/auth"
 
 // Dynamically import the map to avoid SSR issues
 const EventMap = dynamic(() => import("@/components/event-map").then((mod) => mod.EventMap), {
@@ -30,10 +31,21 @@ export default function HomePage() {
   const { user, logout } = useAuth()
   const [showLoginModal, setShowLoginModal] = useState(false)
 
+  // Crear usuario real basado en Firebase Auth
+  const currentUser = user ? {
+    id: user.uid,
+    name: user.displayName || user.email?.split('@')[0] || 'Usuario',
+    email: user.email || '',
+    avatar: user.photoURL || undefined,
+    zones: mockUser.zones, // Mantener zonas del mock por ahora
+    savedEvents: mockUser.savedEvents, // Mantener eventos guardados del mock por ahora
+    preferences: mockUser.preferences, // Mantener preferencias del mock por ahora
+  } : null
+
   // Event state
   const [selectedEvent, setSelectedEvent] = useState<NaturalEvent | null>(null)
   const [savedEventIds, setSavedEventIds] = useState<string[]>(
-    mockUser.savedEvents.map((e) => e.eventId)
+    currentUser?.savedEvents?.map((e) => e.eventId) || mockUser.savedEvents.map((e) => e.eventId)
   )
 
   // Filter state
@@ -86,7 +98,7 @@ export default function HomePage() {
     <div className="h-screen flex flex-col bg-background">
       <AppHeader
         isAuthenticated={!!user}
-        user={user ? { ...mockUser, email: user.email || '' } : null}
+        user={currentUser}
         notifications={notifications}
         unreadCount={unreadCount}
         onLoginClick={() => setShowLoginModal(true)}
