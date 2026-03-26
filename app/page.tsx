@@ -98,7 +98,7 @@ export default function HomePage() {
     <div className="h-screen flex flex-col bg-background">
       <AppHeader
         isAuthenticated={!!user}
-        user={currentUser}
+        user={user}
         notifications={notifications}
         unreadCount={unreadCount}
         onLoginClick={() => setShowLoginModal(true)}

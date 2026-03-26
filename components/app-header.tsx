@@ -12,11 +12,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import type { Notification, User as UserType } from "@/lib/types"
+import type { Notification } from "@/lib/types"
+import type { User as FirebaseUser } from "firebase/auth"
 
 interface AppHeaderProps {
   isAuthenticated: boolean
-  user?: UserType | null
+  user?: FirebaseUser | null
   notifications?: Notification[]
   unreadCount?: number
   onLoginClick: () => void
@@ -128,7 +129,7 @@ export function AppHeader({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <div className="px-2 py-1.5">
-                  <p className="text-sm font-medium text-foreground">{user?.name}</p>
+                  <p className="text-sm font-medium text-foreground">{user?.displayName || user?.email?.split('@')[0] || 'User'}</p>
                   <p className="text-xs text-muted-foreground">{user?.email}</p>
                 </div>
                 <DropdownMenuSeparator />

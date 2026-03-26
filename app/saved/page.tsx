@@ -11,9 +11,11 @@ import { NotificationsPanel } from "@/components/notifications-panel"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { mockEvents, mockUser, emergencyContacts, mockNotifications } from "@/lib/mock-data"
+import { useAuth } from "@/hooks/use-auth"
 import type { NaturalEvent } from "@/lib/types"
 
 export default function SavedEventsPage() {
+  const { user } = useAuth()
   const [showEmergencyContacts, setShowEmergencyContacts] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [notifications, setNotifications] = useState(mockNotifications)
@@ -50,8 +52,8 @@ export default function SavedEventsPage() {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader
-        isAuthenticated={true}
-        user={mockUser}
+        isAuthenticated={!!user}
+        user={user ? { ...mockUser, email: user.email || '' } : null}
         notifications={notifications}
         unreadCount={unreadCount}
         onLoginClick={() => {}}

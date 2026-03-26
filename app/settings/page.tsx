@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import {
   Bell,
@@ -24,15 +24,32 @@ import { Switch } from "@/components/ui/switch"
 import { Checkbox } from "@/components/ui/checkbox"
 import { FieldGroup, Field, FieldLabel } from "@/components/ui/field"
 import { mockUser, mockZones, emergencyContacts, mockNotifications } from "@/lib/mock-data"
+import { useAuth } from "@/hooks/use-auth"
+import { auth } from "@/lib/firebase"
+import { updateProfile, updateEmail } from "firebase/auth"
 import type { EventType, AlertLevel, ZoneOfInterest } from "@/lib/types"
 
 export default function SettingsPage() {
+  const { user } = useAuth()
   const [showEmergencyContacts, setShowEmergencyContacts] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [notifications, setNotifications] = useState(mockNotifications)
   const [zones, setZones] = useState<ZoneOfInterest[]>(mockZones)
   const [preferences, setPreferences] = useState(mockUser.preferences)
   const [showAddZone, setShowAddZone] = useState(false)
+  const [profile, setProfile] = useState({
+    name: user?.displayName || user?.email?.split("@")[0] || mockUser.name,
+    email: user?.email || mockUser.email,
+  })
+
+  useEffect(() => {
+    if (user) {
+      setProfile({
+        name: user.displayName || user.email?.split("@")[0] || mockUser.name,
+        email: user.email || mockUser.email,
+      })
+    }
+  }, [user])
   const [newZone, setNewZone] = useState({
     name: "",
     radius: 100,
@@ -50,6 +67,31 @@ export default function SettingsPage() {
 
   const handleDeleteZone = (id: string) => {
     setZones((prev) => prev.filter((z) => z.id !== id))
+  }
+
+  const handleSaveProfile = async () => {
+    if (!user) return
+
+    try {
+      await updateProfile(user, {
+        displayName: profile.name,
+      })
+
+      if (profile.email && user.email !== profile.email) {
+        await updateEmail(user, profile.email)
+      }
+
+      await auth.currentUser?.reload()
+      const refreshedUser = auth.currentUser
+      setProfile({
+        name: refreshedUser?.displayName || refreshedUser?.email?.split("@")[0] || profile.name,
+        email: refreshedUser?.email || profile.email,
+      })
+      // Si quieres, agrega alerta visual con toast en vez de console.log
+      console.log("Perfil actualizado correctamente")
+    } catch (error) {
+      console.error("Error actualizando perfil:", error)
+    }
   }
 
   const handleAddZone = () => {
@@ -95,8 +137,8 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader
-        isAuthenticated={true}
-        user={mockUser}
+        isAuthenticated={!!user}
+        user={user}
         notifications={notifications}
         unreadCount={unreadCount}
         onLoginClick={() => {}}
@@ -128,15 +170,22 @@ export default function SettingsPage() {
             <FieldGroup>
               <Field>
                 <FieldLabel>Name</FieldLabel>
-                <Input defaultValue={mockUser.name} />
+                <Input
+                  value={profile.name}
+                  onChange={(e) => setProfile(prev => ({ ...prev, name: e.target.value }))}
+                />
               </Field>
               <Field>
                 <FieldLabel>Email</FieldLabel>
-                <Input type="email" defaultValue={mockUser.email} />
+                <Input
+                  type="email"
+                  value={profile.email}
+                  onChange={(e) => setProfile(prev => ({ ...prev, email: e.target.value }))}
+                />
               </Field>
             </FieldGroup>
 
-            <Button className="mt-4 gap-2">
+            <Button className="mt-4 gap-2" onClick={handleSaveProfile}>
               <Save className="w-4 h-4" />
               Save Changes
             </Button>

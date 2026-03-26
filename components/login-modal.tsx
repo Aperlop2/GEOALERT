@@ -15,7 +15,7 @@ interface LoginModalProps {
 }
 
 export function LoginModal({ isOpen, onClose }: LoginModalProps) {
-  const { signIn, signUp } = useAuth()
+  const { signIn, signUp, signInWithGoogle } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -23,6 +23,16 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [mode, setMode] = useState<"login" | "register">("login")
 
   if (!isOpen) return null
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle()
+      toast.success("Successfully signed in with Google!")
+      onClose()
+    } catch (error: any) {
+      toast.error(error.message || "An error occurred")
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -123,7 +133,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
           </div>
 
           <div className="grid grid-cols-2 gap-3 justify-center">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={handleGoogleSignIn}>
               <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
                 <path
                   fill="currentColor"

@@ -29,9 +29,11 @@ import {
   emergencyContacts,
   preventionRecommendations,
 } from "@/lib/mock-data"
+import { useAuth } from "@/hooks/use-auth"
 import type { EventType } from "@/lib/types"
 
 export default function DashboardPage() {
+  const { user } = useAuth()
   const [showEmergencyContacts, setShowEmergencyContacts] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [notifications, setNotifications] = useState(mockNotifications)
@@ -55,8 +57,8 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader
-        isAuthenticated={true}
-        user={mockUser}
+        isAuthenticated={!!user}
+        user={user}
         notifications={notifications}
         unreadCount={unreadCount}
         onLoginClick={() => {}}
